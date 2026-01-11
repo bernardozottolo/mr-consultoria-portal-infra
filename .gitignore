@@ -1,0 +1,24 @@
+# Secrets - NUNCA commitar
+secrets/
+*.json
+!*.example.json
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# Volumes (dados persistentes)
+volumes/
+backups/
+
+# Logs
+*.log
+logs/
+
+# Docker
+.docker/
+
+# OS
+.DS_Store
+Thumbs.db

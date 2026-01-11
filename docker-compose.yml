@@ -1,0 +1,58 @@
+version: '3.8'
+
+services:
+  reverse-proxy:
+    image: caddy:2-alpine
+    container_name: portal-proxy
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./caddy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    restart: unless-stopped
+    networks:
+      - portal-network
+    depends_on:
+      - backend
+      - frontend
+
+  frontend:
+    image: nginx:alpine
+    container_name: portal-frontend
+    volumes:
+      - ../portal-frontend:/usr/share/nginx/html:ro
+    restart: unless-stopped
+    networks:
+      - portal-network
+
+  backend:
+    build:
+      context: ../portal-backend
+      dockerfile: Dockerfile
+    container_name: portal-backend
+    environment:
+      - FLASK_ENV=production
+      - DB_PATH=/app/data/database.db
+      - GOOGLE_SERVICE_ACCOUNT_FILE=/run/secrets/google.json
+      - JWT_SECRET=${JWT_SECRET}
+      - ENABLE_CORS=false
+      - LOG_LEVEL=INFO
+    env_file:
+      - .env
+    volumes:
+      - ./volumes/backend-data:/app/data:rw
+      - ./secrets:/run/secrets:ro
+    restart: unless-stopped
+    networks:
+      - portal-network
+    # REMOVIDO: depends_on: reverse-proxy (backend não depende do proxy)
+
+volumes:
+  caddy_data:
+  caddy_config:
+
+networks:
+  portal-network:
+    driver: bridge
