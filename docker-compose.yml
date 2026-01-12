@@ -34,7 +34,7 @@ services:
     container_name: portal-backend
     environment:
       - FLASK_ENV=production
-      - DB_PATH=/app/data/database.db
+      - DB_PATH=/app/db/database.db
       - GOOGLE_SERVICE_ACCOUNT_FILE=/run/secrets/google.json
       - JWT_SECRET=${JWT_SECRET}
       - ENABLE_CORS=false
@@ -42,7 +42,10 @@ services:
     env_file:
       - .env
     volumes:
-      - ./volumes/backend-data:/app/data:rw
+      # Montar apenas o diretório do banco de dados, não o diretório data/
+      # Isso preserva os módulos Python (__init__.py, users_db.py, etc.) no container
+      # O diretório ./volumes/backend-data/ será criado automaticamente se não existir
+      - ./volumes/backend-data:/app/db:rw
       - ./secrets:/run/secrets:ro
     restart: unless-stopped
     networks:
